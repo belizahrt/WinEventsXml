@@ -1,0 +1,25 @@
+let
+    Источник = Xml.Tables(File.Contents("C:\Users\amur_kua\source\repos\SysLogAnalysis\EventLog.xml")),
+    Table0 = Источник{0}[Table],
+    Table1 = Table0{0}[Table],
+    #"Развернутый элемент RenderingInfo" = Table.ExpandTableColumn(Table1, "RenderingInfo", {"Message"}, {"RenderingInfo.Message"}),
+    #"Переупорядоченные столбцы" = Table.ReorderColumns(#"Развернутый элемент RenderingInfo",{"System", "EventData", "UserData", "RenderingInfo.Message"}),
+    #"Удаленные столбцы" = Table.RemoveColumns(#"Переупорядоченные столбцы",{"EventData"}),
+    #"Развернутый элемент System" = Table.ExpandTableColumn(#"Удаленные столбцы", "System", {"Provider", "EventID", "Level", "TimeCreated", "EventRecordID", "Channel", "Computer", "Security"}, {"System.Provider", "System.EventID", "System.Level", "System.TimeCreated", "System.EventRecordID", "System.Channel", "System.Computer", "System.Security"}),
+    #"Переименованные столбцы" = Table.RenameColumns(#"Развернутый элемент System",{{"RenderingInfo.Message", "Message"}}),
+    #"Удаленные столбцы1" = Table.RemoveColumns(#"Переименованные столбцы",{"UserData"}),
+    #"Переименованные столбцы1" = Table.RenameColumns(#"Удаленные столбцы1",{{"System.Provider", "Provider"}, {"System.EventID", "EventID"}, {"System.Level", "Level"}, {"System.TimeCreated", "Time"}, {"System.EventRecordID", "RecordID"}, {"System.Channel", "Channel"}, {"System.Computer", "Computer"}, {"System.Security", "Username"}}),
+    #"Развернутый элемент Provider" = Table.ExpandTableColumn(#"Переименованные столбцы1", "Provider", {"Attribute:Name", "Attribute:Guid", "Attribute:EventSourceName"}, {"Provider.Attribute:Name", "Provider.Attribute:Guid", "Provider.Attribute:EventSourceName"}),
+    #"Развернутый элемент EventID" = Table.TransformColumns(#"Развернутый элемент Provider", {{"EventID", each if _ is table then Table.FirstValue(_) else _}}),
+    #"Переименованные столбцы2" = Table.RenameColumns(#"Развернутый элемент EventID",{{"Provider.Attribute:Name", "Provider"}, {"Provider.Attribute:Guid", "Guid"}, {"Provider.Attribute:EventSourceName", "Source"}}),
+    #"Развернутый элемент Time" = Table.ExpandTableColumn(#"Переименованные столбцы2", "Time", {"Attribute:SystemTime"}, {"Time.Attribute:SystemTime"}),
+    #"Переименованные столбцы3" = Table.RenameColumns(#"Развернутый элемент Time",{{"Time.Attribute:SystemTime", "TimeCreated"}}),
+    #"Разделить столбец по разделителю" = Table.SplitColumn(#"Переименованные столбцы3", "TimeCreated", Splitter.SplitTextByDelimiter("T", QuoteStyle.Csv), {"TimeCreated.1", "TimeCreated.2"}),
+    #"Измененный тип" = Table.TransformColumnTypes(#"Разделить столбец по разделителю",{{"TimeCreated.1", type date}, {"TimeCreated.2", type datetime}}),
+    #"Удаленные столбцы2" = Table.RemoveColumns(#"Измененный тип",{"TimeCreated.1"}),
+    #"Переименованные столбцы4" = Table.RenameColumns(#"Удаленные столбцы2",{{"TimeCreated.2", "CreatedTime"}}),
+    #"Сгруппированные строки" = Table.Group(#"Переименованные столбцы4", {"Provider", "Source", "EventID", "Level", "Channel", "Computer", "Message"}, {{"Shots", each Table.RowCount(_), type number}, {"LastShotTime", each List.Max([CreatedTime]), type datetime}}),
+    #"Переупорядоченные столбцы1" = Table.ReorderColumns(#"Сгруппированные строки",{"Computer", "Channel", "Provider", "Source", "EventID", "Level", "Message", "LastShotTime", "Shots"}),
+    #"Замененное значение" = Table.ReplaceValue(#"Переупорядоченные столбцы1","1","Critical",Replacer.ReplaceText,{"Level"})
+in
+    #"Замененное значение"

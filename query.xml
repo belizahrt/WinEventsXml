@@ -1,0 +1,6 @@
+<QueryList>
+	<Query Id = "0" Path = "Application">
+		<Select Path = "Application">*[System[(Level = 1 or Level = 2) and TimeCreated[timediff(@SystemTime) &lt;= 86400000]]]</Select>
+		<Select Path = "System">*[System[(Level = 1 or Level = 2) and TimeCreated[timediff(@SystemTime) &lt;= 86400000]]]</Select>
+	</Query>
+</QueryList>
