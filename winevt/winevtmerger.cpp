@@ -17,6 +17,7 @@ namespace wew {
 
         pugi::xml_document xmlEvents2;
         LoadFromBuffer(strEvents2, xmlEvents2);
+        EventsNodeInitialize(xmlEvents2);
 
         pugi::xml_node outEventsNode = xmlEvents2.child("Events");
         pugi::xml_node inEventsNode = xmlEvents1.child("Events");
@@ -34,6 +35,20 @@ namespace wew {
 
         pugi::xml_node eventsNode = m_xmlEvents.append_child("Events");
         XmlNodesInsert(eventsNode, outEventsNode);
+    }
+
+    bool HasEvents(pugi::xml_node node)
+    {
+        std::string nodeName = node.name();
+
+        return nodeName == "Events";
+    }
+
+    void  WinEvtXmlMerger::EventsNodeInitialize(pugi::xml_document& document)
+    {
+        if (document.find_child(HasEvents).empty()) {
+            document.append_child("Events");
+        }
     }
 
     pugi::xml_document WinEvtXmlMerger::GetXmlEvents()

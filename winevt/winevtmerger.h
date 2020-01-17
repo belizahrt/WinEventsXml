@@ -19,6 +19,7 @@ namespace wew {
     private:
         pugi::xml_document m_xmlEvents;
 
+        void EventsNodeInitialize(pugi::xml_document& document);
         pugi::xml_parse_result LoadFromBuffer(const std::wstring& buffer,
             pugi::xml_document& destination);
     };
