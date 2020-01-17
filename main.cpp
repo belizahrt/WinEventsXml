@@ -108,6 +108,7 @@ std::wstring readFile(const wchar_t* path)
         new std::codecvt_utf8<wchar_t>));
     std::wstringstream wss;
     wss << wif.rdbuf();
+    wif.close();
     return wss.str();
 }
 

@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <codecvt>
+#include <sstream>
 #include <vector>
 #include <Windows.h>
 #include <sddl.h>

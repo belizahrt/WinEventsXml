@@ -199,27 +199,20 @@ namespace wew {
         return callEvtFormatMessage.lpBuffer;
     }
 
-    std::wstring LoadFile(std::wstring path) {
-        const int MaxBufferSize = 1024;
-
-        std::wstring content;
-
-        std::wifstream file(path);
-        wchar_t line[MaxBufferSize];
-        if (file.is_open()) {
-            while (!file.fail()) {
-                file.getline(line, MaxBufferSize);
-                content += line;
-            }
-            file.close();
-        }
-
-        return content;
+    std::wstring readFile(const wchar_t* path)
+    {
+        std::wifstream wif(path);
+        wif.imbue(std::locale(std::locale::empty(),
+            new std::codecvt_utf8<wchar_t>));
+        std::wstringstream wss;
+        wss << wif.rdbuf();
+        wif.close();
+        return wss.str();
     }
 
     bool WinEvtXmlWrapper::LoadQueryFromFile(const std::wstring& path)
     {
-        m_query = LoadFile(path);
+        m_query = readFile(path.c_str());
 
         if (m_query.length() == 0) {
             return false;
