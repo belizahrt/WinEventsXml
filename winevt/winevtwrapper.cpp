@@ -88,9 +88,10 @@ namespace wew {
         }
         EvtHandleHolder evtContextDeleter(&hContext);
         
-        PEVT_VARIANT varPublisherName = static_cast<PEVT_VARIANT>(
-            Render(hContext, hEvent, EvtRenderEventValues));
-        LPCWSTR pwszPublisherName = varPublisherName[0].StringVal;
+        std::shared_ptr<void> ptrPublisherName{
+            Render(hContext, hEvent, EvtRenderEventValues) };
+        LPCWSTR pwszPublisherName = static_cast<PEVT_VARIANT>
+            (ptrPublisherName.get())->StringVal;
 
         LPCWSTR content {};
         EVT_HANDLE hProviderMetadata =
@@ -113,6 +114,7 @@ namespace wew {
 
         if (content != nullptr) {
             xmlEvent = content;
+            delete content;
         }
 
         return xmlEvent;
