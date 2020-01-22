@@ -4,7 +4,7 @@ namespace wew {
 
     std::wstring WinEvtXmlWrapper::ExecuteQuery()
     {
-        std::wstring xmlEvents{ L"<Events></Events>" };
+        std::wstring xmlEvents;
 
         m_Errors.clear();
 
@@ -19,6 +19,7 @@ namespace wew {
             }
             EvtHandleHolder evtEventsDeleter(&hEvents);
 
+            xmlEvents.insert(0, L"<Events></Events>");
             xmlEvents.insert(8, FetchEvents(hEvents));
             xmlEvents.insert(0, L"<\?xml version=\"1.0\"\?>");
         }
