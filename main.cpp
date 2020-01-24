@@ -26,6 +26,7 @@ int main(int argc, char** argv)
         std::clog << "Merging events.\n";
 
         winEvtMerger.loadOEventsFile(mainInfo.outputFile.c_str());
+        DeleteFile(mainInfo.outputFile.c_str());
     }
     else if (mainInfo.outputMode == RewriteOutput) {
         std::clog << "Writing events in file.\n";
@@ -40,11 +41,6 @@ int main(int argc, char** argv)
         L"...succeed" : L"...failed") << std::endl;
 
     std::clog << std::hex << "Finished. (LEC=0x" << GetLastError() << ")\n";
-
-    pugi::xml_document doc;
-    
-    std::wclog << (doc.save_file(L"//file-oduvs-amur/siis/Log_files/New/asd.xml") ?
-        L"...succeed" : L"...failed") << std::endl;
 
     return 0;
 }
