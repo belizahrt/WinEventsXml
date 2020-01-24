@@ -18,20 +18,33 @@ int main(int argc, char** argv)
         OutputErrors(winEvtXml.GetErrors());
         return 0;
     }
-
     std::clog << "Executing query has been finished.\n";
 
+    WinEvtXmlMerger winEvtMerger;
+    winEvtMerger.setIEventsString(eventsRetrieved);
     if (mainInfo.outputMode == MergeOutput) {
         std::clog << "Merging events.\n";
-        std::wstring outputEvents = readFile(mainInfo.outputFile.c_str());
-        WinEvtXmlMerger evtMerger(eventsRetrieved, outputEvents);
-        evtMerger.GetXmlEvents().save_file(mainInfo.outputFile.c_str());
+
+        winEvtMerger.loadOEventsFile(mainInfo.outputFile.c_str());
     }
     else if (mainInfo.outputMode == RewriteOutput) {
         std::clog << "Writing events in file.\n";
-        WinEvtXmlMerger evtMerger(eventsRetrieved, L"");
-        evtMerger.GetXmlEvents().save_file(mainInfo.outputFile.c_str());
+
+        winEvtMerger.setOEventsString({});
     }
+    auto [mergedEvents, insertedCount] = winEvtMerger.Merge();
+    std::clog << insertedCount << " events inserted.\n";
+
+    std::wclog << "Saving in " << mainInfo.outputFile.c_str() << std::endl;
+    std::wclog << (mergedEvents.save_file(mainInfo.outputFile.c_str()) ? 
+        L"...succeed" : L"...failed") << std::endl;
+
+    std::clog << std::hex << "Finished. (LEC=0x" << GetLastError() << ")\n";
+
+    pugi::xml_document doc;
+    
+    std::wclog << (doc.save_file(L"//file-oduvs-amur/siis/Log_files/New/asd.xml") ?
+        L"...succeed" : L"...failed") << std::endl;
 
     return 0;
 }
@@ -100,17 +113,6 @@ MainInfo HandleArgs(int argc, char** argv)
 
 // ---------------------------------------------------
 // utils:
-
-std::wstring readFile(const wchar_t* path)
-{
-    std::wifstream wif(path);
-    wif.imbue(std::locale(std::locale::empty(), 
-        new std::codecvt_utf8<wchar_t>));
-    std::wstringstream wss;
-    wss << wif.rdbuf();
-    wif.close();
-    return wss.str();
-}
 
 // only for 1 byte chars
 int StringToWString(std::wstring& ws, const std::string& s)

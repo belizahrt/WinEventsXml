@@ -204,13 +204,21 @@ namespace wew {
 
     std::wstring readFile(const wchar_t* path)
     {
-        std::wifstream wif(path);
-        wif.imbue(std::locale(std::locale::empty(),
-            new std::codecvt_utf8<wchar_t>));
-        std::wstringstream wss;
-        wss << wif.rdbuf();
-        wif.close();
-        return wss.str();
+        std::wstringstream wideStringStream;
+        std::wifstream wideInputFileStream(path);
+
+        if (wideInputFileStream.is_open()) {
+            wideInputFileStream.imbue(std::locale(std::locale::empty(),
+                new std::codecvt_utf8<wchar_t>));
+
+            wideStringStream << wideInputFileStream.rdbuf();
+            wideInputFileStream.close();
+        }
+        else {
+            std::wcerr << L"Cannot to open file " << path << std::endl;
+        }
+
+        return wideStringStream.str();
     }
 
     bool WinEvtXmlWrapper::LoadQueryFromFile(const std::wstring& path)

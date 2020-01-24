@@ -9,32 +9,58 @@ namespace wew {
         }
     }
 
-    WinEvtXmlMerger::WinEvtXmlMerger(const std::wstring& strEvents1,
-        const std::wstring& strEvents2)
+    std::tuple<pugi::xml_document, std::size_t> 
+    WinEvtXmlMerger::Merge()
     {
-        pugi::xml_document xmlEvents1;
-        LoadFromBuffer(strEvents1, xmlEvents1);
+        pugi::xml_node outEventsNode = m_oXmlEvents.child("Events");
+        pugi::xml_node inEventsNode = m_iXmlEvents.child("Events");
 
-        pugi::xml_document xmlEvents2;
-        LoadFromBuffer(strEvents2, xmlEvents2);
-        EventsNodeInitialize(xmlEvents2);
+        pugi::xml_document mergedXmlEvents;
+        pugi::xml_node mergedEventsNode = mergedXmlEvents.append_child("Events");
+        XmlNodesInsert(mergedEventsNode, outEventsNode);
 
-        pugi::xml_node outEventsNode = xmlEvents2.child("Events");
-        pugi::xml_node inEventsNode = xmlEvents1.child("Events");
-
+        std::size_t eventsInserted {};
         for (auto inEvent : inEventsNode) {
             pugi::xml_node systemNode = inEvent.child("System");
-            MergePredicate predicate { 
+            MergePredicate predicate{
                 systemNode.child("Computer").text().as_string(),
                 systemNode.child("EventRecordID").text().as_uint()
             };
 
-            if (outEventsNode.find_child(predicate).empty())
-                outEventsNode.append_copy(inEvent);
+            if (mergedEventsNode.find_child(predicate).empty()) {
+                mergedEventsNode.append_copy(inEvent);
+                eventsInserted++;
+            }
         }
 
-        pugi::xml_node eventsNode = m_xmlEvents.append_child("Events");
-        XmlNodesInsert(eventsNode, outEventsNode);
+        return { std::move(mergedXmlEvents), eventsInserted };
+    }
+
+    bool WinEvtXmlMerger::setIEventsString(const std::wstring& events)
+    {
+        if (LoadFromBuffer(events, m_iXmlEvents)) {
+            EventsNodeInitialize(m_iXmlEvents);
+            return true;
+        }
+        return false;
+    }
+
+    bool WinEvtXmlMerger::setOEventsString(const std::wstring& events)
+    {
+        if (LoadFromBuffer(events, m_oXmlEvents)) {
+            EventsNodeInitialize(m_oXmlEvents);
+            return true;
+        }
+        return false;
+    }
+
+    bool WinEvtXmlMerger::loadOEventsFile(const std::wstring& file)
+    {
+        if (m_oXmlEvents.load_file(file.c_str())) {
+            EventsNodeInitialize(m_oXmlEvents);
+            return true;
+        }
+        return false;
     }
 
     bool HasEvents(pugi::xml_node node)
@@ -49,11 +75,6 @@ namespace wew {
         if (document.find_child(HasEvents).empty()) {
             document.append_child("Events");
         }
-    }
-
-    pugi::xml_document WinEvtXmlMerger::GetXmlEvents()
-    {
-        return std::move(m_xmlEvents);
     }
 
     pugi::xml_parse_result WinEvtXmlMerger::LoadFromBuffer(

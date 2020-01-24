@@ -7,17 +7,20 @@ namespace wew {
 
     class WinEvtXmlMerger final {
     public:
-        WinEvtXmlMerger() = delete;
+        WinEvtXmlMerger() = default;
         WinEvtXmlMerger operator=(const WinEvtXmlMerger&) = delete;
         WinEvtXmlMerger(const WinEvtXmlMerger&) = delete;
 
-        WinEvtXmlMerger(const std::wstring& strEvents1, 
-            const std::wstring& strEvents2);
+        std::tuple<pugi::xml_document, std::size_t> Merge();
 
-        pugi::xml_document GetXmlEvents();
+        bool setIEventsString(const std::wstring& events);
+        bool setOEventsString(const std::wstring& events);
+
+        bool loadOEventsFile(const std::wstring& file);
 
     private:
-        pugi::xml_document m_xmlEvents;
+        pugi::xml_document m_iXmlEvents;
+        pugi::xml_document m_oXmlEvents;
 
         void EventsNodeInitialize(pugi::xml_document& document);
         pugi::xml_parse_result LoadFromBuffer(const std::wstring& buffer,

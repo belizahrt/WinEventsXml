@@ -26,7 +26,6 @@ void OutputLogo();
 void OutputHelp();
 
 int StringToWString(std::wstring& ws, const std::string& s);
-std::wstring readFile(const wchar_t* path);
 MainInfo HandleArgs(int argc, char** argv);
 
 #endif
