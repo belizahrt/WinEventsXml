@@ -56,8 +56,8 @@ namespace wew {
     };
 
     struct WinEvtXmlException {
-        DWORD			lastErrorCode;
-        const wchar_t*	message;
+        DWORD           lastErrorCode;
+        const wchar_t*  message;
     };
 
     struct EvtHandleDeleter {
@@ -72,13 +72,13 @@ namespace wew {
     struct EvtRenderCaller {
         bool operator()();
 
-        EVT_HANDLE			hContext;
-        EVT_HANDLE			hEvent;
-        EVT_RENDER_FLAGS	dwFlags{ EvtRenderEventValues };
-        DWORD				dwBufferSize;
-        LPVOID				pRenderedValues;
-        DWORD				dwBufferUsed; 
-        DWORD				dwPropertyCount;
+        EVT_HANDLE          hContext;
+        EVT_HANDLE          hEvent;
+        EVT_RENDER_FLAGS    dwFlags{ EvtRenderEventValues };
+        DWORD               dwBufferSize;
+        LPVOID              pRenderedValues;
+        DWORD               dwBufferUsed; 
+        DWORD               dwPropertyCount;
     };
 
     struct EvtFormatMessageCaller {
