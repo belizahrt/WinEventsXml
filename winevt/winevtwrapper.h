@@ -28,30 +28,30 @@ namespace wew {
         std::wstring    ExecuteQuery();
         bool            LoadQueryFromFile(const std::wstring& path);
         
-        std::wstring	GetComputer() const;
-        void			SetComputer(const std::wstring& value);
-        std::wstring	GetQuery() const;
-        void			SetQuery(const std::wstring& value);
-        DWORD			GetQueryFlags() const;
-        void			SetQueryFlags(const DWORD value);
-        ErrorsVector	GetErrors() const;
+        std::wstring    GetComputer() const;
+        void            SetComputer(const std::wstring& value);
+        std::wstring    GetQuery() const;
+        void            SetQuery(const std::wstring& value);
+        DWORD           GetQueryFlags() const;
+        void            SetQueryFlags(const DWORD value);
+        ErrorsVector    GetErrors() const;
 
     private:
-        EVT_HANDLE		m_hSession{ 0 };
-        std::wstring	m_computer;
-        std::wstring	m_query;
-        DWORD			m_queryFlags{ DefaultQueryFlags };
-        ErrorsVector	m_Errors;
+        EVT_HANDLE      m_hSession{ 0 };
+        std::wstring    m_computer;
+        std::wstring    m_query;
+        DWORD           m_queryFlags{ DefaultQueryFlags };
+        ErrorsVector    m_Errors;
 
-        EVT_HANDLE		OpenRemoteSession(LPCWSTR lpwszRemote);
-        EVT_HANDLE		CreateProviderRenderContext();
-        std::wstring	FetchEvents(EVT_HANDLE hEvents);
-        std::wstring	RenderEventToXml(EVT_HANDLE hEvent);
-        LPVOID			Render(EVT_HANDLE hContext, EVT_HANDLE hEvent,
+        EVT_HANDLE      OpenRemoteSession(LPCWSTR lpwszRemote);
+        EVT_HANDLE      CreateProviderRenderContext();
+        std::wstring    FetchEvents(EVT_HANDLE hEvents);
+        std::wstring    RenderEventToXml(EVT_HANDLE hEvent);
+        LPVOID          Render(EVT_HANDLE hContext, EVT_HANDLE hEvent,
                             EVT_RENDER_FLAGS flags);
-        LPWSTR			FormatEventMessageString(EVT_HANDLE hMetadata,
+        LPWSTR          FormatEventMessageString(EVT_HANDLE hMetadata,
                             EVT_HANDLE hEvent);
-        void			PushError(const DWORD lastErrorCode, 
+        void            PushError(const DWORD lastErrorCode, 
                             const wchar_t* message);
     };
 
@@ -84,15 +84,15 @@ namespace wew {
     struct EvtFormatMessageCaller {
         bool operator()();
 
-        EVT_HANDLE hMetadata;
-        EVT_HANDLE hEvent;
-        DWORD dwMessageId;
-        DWORD dwValuesCount;
-        PEVT_VARIANT pRenderedValues;
-        DWORD dwFlags{ EvtFormatMessageXml };
-        DWORD dwBufferSize;
-        LPWSTR lpBuffer;
-        DWORD dwBufferUsed;
+        EVT_HANDLE      hMetadata;
+        EVT_HANDLE      hEvent;
+        DWORD           dwMessageId;
+        DWORD           dwValuesCount;
+        PEVT_VARIANT    pRenderedValues;
+        DWORD           dwFlags{ EvtFormatMessageXml };
+        DWORD           dwBufferSize;
+        LPWSTR          lpBuffer;
+        DWORD           dwBufferUsed;
     };
 
 }

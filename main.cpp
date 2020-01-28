@@ -2,50 +2,72 @@
 
 int main(int argc, char** argv)
 {
-    OutputLogo();
+    Main::OutputLogo();
 
-    MainInfo mainInfo = HandleArgs(argc, argv);
+    Main::MainInfo mainInfo = Main::HandleArgs(argc, argv);
 
-    WinEvtXmlWrapper winEvtXml;
-    winEvtXml.SetComputer(mainInfo.remoteComputer);
-    winEvtXml.LoadQueryFromFile(mainInfo.queryFile);
+    try {
+        std::wclog << "Executing query...\n";
+        std::wstring eventsRetrieved = 
+            Main::GetEvents(mainInfo.remoteComputer, mainInfo.queryFile);
+        std::wclog << L"Executing query has been finished.\n";
 
-    std::wstring eventsRetrieved = winEvtXml.ExecuteQuery();
-    if (eventsRetrieved.length() == 0) {
-        
-        std::clog << "Retrieving events failed.\n";
-
-        OutputErrors(winEvtXml.GetErrors());
-        return 0;
+        Main::OutputEvents(eventsRetrieved, mainInfo.outputFile, 
+            mainInfo.outputMode);
     }
-    std::clog << "Executing query has been finished.\n";
-
-    WinEvtXmlMerger winEvtMerger;
-    winEvtMerger.setIEventsString(eventsRetrieved);
-    if (mainInfo.outputMode == MergeOutput) {
-        std::clog << "Merging events.\n";
-
-        winEvtMerger.loadOEventsFile(mainInfo.outputFile.c_str());
-        DeleteFile(mainInfo.outputFile.c_str());
+    catch (const wchar_t* message) {
+        std::wcerr << message;
     }
-    else if (mainInfo.outputMode == RewriteOutput) {
-        std::clog << "Writing events in file.\n";
 
-        winEvtMerger.setOEventsString({});
-    }
-    auto [mergedEvents, insertedCount] = winEvtMerger.Merge();
-    std::clog << insertedCount << " events inserted.\n";
-
-    std::wclog << "Saving in " << mainInfo.outputFile.c_str() << std::endl;
-    std::wclog << (mergedEvents.save_file(mainInfo.outputFile.c_str()) ? 
-        L"...succeed" : L"...failed") << std::endl;
-
-    std::clog << std::hex << "Finished. (LEC=0x" << GetLastError() << ")\n";
+    std::wclog << std::hex << L"Finished. (LEC=0x" << GetLastError() << L")\n";
 
     return 0;
 }
 
-void OutputErrors(const ErrorsVector& errors)
+std::wstring Main::GetEvents(const std::wstring& computer,
+    const std::wstring& queryFile)
+{
+    WinEvtXmlWrapper winEvtXml;
+    winEvtXml.SetComputer(computer);
+    winEvtXml.LoadQueryFromFile(queryFile);
+    
+    std::wstring eventsRetrieved = winEvtXml.ExecuteQuery();
+    if (eventsRetrieved.length() == 0) {
+
+        throw L"Retrieving events failed.";
+
+        OutputErrors(winEvtXml.GetErrors());
+    }
+
+    return eventsRetrieved;
+}
+
+void Main::OutputEvents(const std::wstring& newEvents,
+    const std::wstring& outputFile, 
+    short mode = Main::MergeOutput)
+{
+    WinEvtXmlMerger winEvtMerger;
+    winEvtMerger.setIEventsString(newEvents);
+    if (mode == Main::MergeOutput) {
+        std::wclog << L"Merging events in file.\n";
+
+        winEvtMerger.loadOEventsFile(outputFile.c_str());
+        DeleteFile(outputFile.c_str());
+    }
+    else if (mode == Main::RewriteOutput) {
+        std::wclog << L"Writing events in file.\n";
+
+        winEvtMerger.setOEventsString({});
+    }
+    auto [mergedEvents, insertedCount] = winEvtMerger.Merge();
+    std::wclog << insertedCount << L" events inserted.\n";
+
+    std::wclog << "Saving in " << outputFile.c_str() << std::endl;
+    std::wclog << (mergedEvents.save_file(outputFile.c_str()) ?
+        L"...succeed" : L"...failed") << std::endl;
+}
+
+void Main::OutputErrors(const ErrorsVector& errors)
 {
     if (errors.size() > 0) {
         std::wclog << L"Errors procced:" << std::endl;
@@ -56,16 +78,17 @@ void OutputErrors(const ErrorsVector& errors)
     }
 }
 
-void OutputLogo()
+void Main::OutputLogo()
 {
-    std::cout << "/--------------------------------\\" << std::endl;
-    std::cout << "|      SysLogAnalysis  v2.0      |" << std::endl;
-    std::cout << "|       kua@amur.so-ups.ru       |" << std::endl;
-    std::cout << "\\--------------------------------/" << std::endl;
+    std::cout << "/-----------------------------------\\" << std::endl;
+    std::cout << "|  Windows Events Xml Extractor     |" << std::endl;
+    std::cout << "|  github: /belizahrt/WinEventsXml  |" << std::endl;
+    std::cout << "|  kua@amur.so-ups.ru               |" << std::endl;
+    std::cout << "\\-----------------------------------/" << std::endl;
     std::cout << std::endl;
 }
 
-void OutputHelp()
+void Main::OutputHelp()
 {
     std::cout << "Usage: sla.exe [COMPUTER] [QUERY_FILE_PATH] [OUTPUT_FILE_PATH] [-m|-r| ]"
         << std::endl;
@@ -76,9 +99,9 @@ void OutputHelp()
     std::cout << "Use ONLY UTF encoding in query file!" << std::endl;
 }
 
-MainInfo HandleArgs(int argc, char** argv)
+Main::MainInfo Main::HandleArgs(int argc, char** argv)
 {
-    MainInfo mainInfo;
+    Main::MainInfo mainInfo;
 
     if (argc >= 3) {
         if (argv[1] != nullptr) {
@@ -111,7 +134,7 @@ MainInfo HandleArgs(int argc, char** argv)
 // utils:
 
 // only for 1 byte chars
-int StringToWString(std::wstring& ws, const std::string& s)
+int Main::StringToWString(std::wstring& ws, const std::string& s)
 {
     std::wstring wsTmp(s.begin(), s.end());
 

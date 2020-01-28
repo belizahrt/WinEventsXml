@@ -10,22 +10,32 @@
 #include "winevt\winevtmerger.h"
 using namespace wew;
 
-const short RewriteOutput = 0;
-const short MergeOutput = 1;
+namespace Main {
 
-struct MainInfo {
-    std::wstring	remoteComputer {};
-    std::wstring	queryFile {};
-    std::wstring	outputFile {};
-    short			outputMode{ RewriteOutput };
-};
+    const short RewriteOutput = 0;
+    const short MergeOutput = 1;
 
-void OutputErrors(const ErrorsVector& errors);
+    struct MainInfo {
+        std::wstring	remoteComputer{};
+        std::wstring	queryFile{};
+        std::wstring	outputFile{};
+        short			outputMode{ RewriteOutput };
+    };
 
-void OutputLogo();
-void OutputHelp();
+    std::wstring GetEvents(const std::wstring& computer,
+        const std::wstring& queryFile);
+    void OutputEvents(const std::wstring& newEvents,
+        const std::wstring& outputFile,
+        short mode);
 
-int StringToWString(std::wstring& ws, const std::string& s);
-MainInfo HandleArgs(int argc, char** argv);
+    void OutputErrors(const ErrorsVector& errors);
+
+    void OutputLogo();
+    void OutputHelp();
+
+    int StringToWString(std::wstring& ws, const std::string& s);
+    MainInfo HandleArgs(int argc, char** argv);
+
+}
 
 #endif
