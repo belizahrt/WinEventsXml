@@ -22,12 +22,12 @@ namespace wew {
         std::size_t eventsInserted {};
         for (auto inEvent : inEventsNode) {
             pugi::xml_node systemNode = inEvent.child("System");
-            MergePredicate predicate{
+            MergePredicate isExists {
                 systemNode.child("Computer").text().as_string(),
                 systemNode.child("EventRecordID").text().as_uint()
             };
 
-            if (mergedEventsNode.find_child(predicate).empty()) {
+            if (mergedEventsNode.find_child(isExists).empty()) {
                 mergedEventsNode.append_copy(inEvent);
                 eventsInserted++;
             }

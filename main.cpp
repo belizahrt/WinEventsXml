@@ -16,7 +16,7 @@ int main(int argc, char** argv)
             mainInfo.outputMode);
     }
     catch (const wchar_t* message) {
-        std::wcerr << message;
+        std::wcerr << message << std::endl;
     }
 
     std::wclog << std::hex << L"Finished. (LEC=0x" << GetLastError() << L")\n";
@@ -33,10 +33,9 @@ std::wstring Main::GetEvents(const std::wstring& computer,
     
     std::wstring eventsRetrieved = winEvtXml.ExecuteQuery();
     if (eventsRetrieved.length() == 0) {
-
-        throw L"Retrieving events failed.";
-
         OutputErrors(winEvtXml.GetErrors());
+        
+        throw L"Retrieving events failed.";
     }
 
     return eventsRetrieved;

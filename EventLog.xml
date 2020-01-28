@@ -2,6 +2,35 @@
 <Events>
 	<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
 		<System>
+			<Provider Name="VBoxNetLwf" />
+			<EventID Qualifiers="49156">12</EventID>
+			<Level>2</Level>
+			<Task>0</Task>
+			<Keywords>0x80000000000000</Keywords>
+			<TimeCreated SystemTime="2020-01-28T04:14:34.101057400Z" />
+			<EventRecordID>17870</EventRecordID>
+			<Channel>System</Channel>
+			<Computer>amur-kua.oduvs.so</Computer>
+			<Security />
+		</System>
+		<EventData>
+			<Data>\Device\VBoxNetLwf</Data>
+			<Binary>0000080001000000000000000C0004C00800000000000000000000000000000000000000000000002C27D725B6F40000</Binary>
+		</EventData>
+		<RenderingInfo Culture="ru-RU">
+			<Message>Драйвер обнаружил внутреннюю ошибку драйвера на \Device\VBoxNetLwf.</Message>
+			<Level>Ошибка</Level>
+			<Task />
+			<Opcode />
+			<Channel />
+			<Provider />
+			<Keywords>
+				<Keyword>Классический</Keyword>
+			</Keywords>
+		</RenderingInfo>
+	</Event>
+	<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+		<System>
 			<Provider Name="NETLOGON" />
 			<EventID Qualifiers="0">5719</EventID>
 			<Level>2</Level>
