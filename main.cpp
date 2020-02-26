@@ -1,25 +1,50 @@
 ﻿#include "main.h"
 
+using namespace Main;
+
+void CreateOutputBackup(const std::wstring& outputFilePath,
+    const std::wstring& backupPath)
+{
+    CopyFile(outputFilePath.c_str(), backupPath.c_str(), false);
+}
+
 int main(int argc, char** argv)
 {
-    Main::OutputLogo();
+    OutputLogo();
 
-    Main::MainInfo mainInfo = Main::HandleArgs(argc, argv);
+    MainInfo mainInfo = HandleArgs(argc, argv);
+
+    std::unique_ptr<WFileLogger> logHelper;
+    if (mainInfo.makeLog) {
+        logHelper.reset(
+            new WFileLogger(std::wclog, mainInfo.logPath, std::ios::app));
+    }
+
+    if (mainInfo.makeBackup) {
+        CreateOutputBackup(mainInfo.outputFile, mainInfo.backupPath);
+    }
+
+    ScopeTimeElapser timeElapsed;
+    
+    OutputExecutionInfo(mainInfo);
+    std::wclog << SplitLine;
 
     try {
         std::wclog << "Executing query...\n";
         std::wstring eventsRetrieved = 
-            Main::GetEvents(mainInfo.remoteComputer, mainInfo.queryFile);
+            GetEvents(mainInfo.remoteComputer, mainInfo.queryFile);
         std::wclog << L"Executing query has been finished.\n";
 
         Main::OutputEvents(eventsRetrieved, mainInfo.outputFile, 
             mainInfo.outputMode);
     }
     catch (const wchar_t* message) {
-        std::wcerr << message << std::endl;
+        std::wclog << message << std::endl;
     }
 
-    std::wclog << std::hex << L"Finished. (LEC=0x" << GetLastError() << L")\n";
+    std::wclog << std::hex << L"Finished. (LEC=0x" << GetLastError() << L")\n"
+        << std::dec;
+    std::wclog << SplitLine;
 
     return 0;
 }
@@ -29,7 +54,11 @@ std::wstring Main::GetEvents(const std::wstring& computer,
 {
     WinEvtXmlWrapper winEvtXml;
     winEvtXml.SetComputer(computer);
-    winEvtXml.LoadQueryFromFile(queryFile);
+    
+    if (!winEvtXml.LoadQueryFromFile(queryFile)) {
+        
+        throw L"Cannot open query file or file is invalid!";
+    }
     
     std::wstring eventsRetrieved = winEvtXml.ExecuteQuery();
     if (eventsRetrieved.length() == 0) {
@@ -47,6 +76,7 @@ void Main::OutputEvents(const std::wstring& newEvents,
 {
     WinEvtXmlMerger winEvtMerger;
     winEvtMerger.setIEventsString(newEvents);
+
     if (mode == Main::MergeOutput) {
         std::wclog << L"Merging events in file.\n";
 
@@ -58,12 +88,24 @@ void Main::OutputEvents(const std::wstring& newEvents,
 
         winEvtMerger.setOEventsString({});
     }
+
     auto [mergedEvents, insertedCount] = winEvtMerger.Merge();
     std::wclog << insertedCount << L" events inserted.\n";
 
     std::wclog << "Saving in " << outputFile.c_str() << std::endl;
     std::wclog << (mergedEvents.save_file(outputFile.c_str()) ?
         L"...succeed" : L"...failed") << std::endl;
+}
+
+void Main::OutputExecutionInfo(const Main::MainInfo& mainInfo)
+{
+    std::wclog << L"\nExecution log for " << mainInfo.remoteComputer << L" on ";
+    std::wclog << GetCurrentComputerName() << std::endl;
+
+    auto timeNow = std::chrono::system_clock::now();
+    std::time_t timeNowT = std::chrono::system_clock::to_time_t(timeNow);
+
+    std::wclog << _wctime(&timeNowT);
 }
 
 void Main::OutputErrors(const ErrorsVector& errors)
@@ -82,17 +124,19 @@ void Main::OutputLogo()
     std::cout << "/-----------------------------------\\" << std::endl;
     std::cout << "|  Windows Events Xml Extractor     |" << std::endl;
     std::cout << "|  github: /belizahrt/WinEventsXml  |" << std::endl;
-    std::cout << "|  kua@amur.so-ups.ru               |" << std::endl;
+    std::cout << "|  mail:   kua@amur.so-ups.ru       |" << std::endl;
     std::cout << "\\-----------------------------------/" << std::endl;
     std::cout << std::endl;
 }
 
 void Main::OutputHelp()
 {
-    std::cout << "Usage: sla.exe [COMPUTER] [QUERY_FILE_PATH] [OUTPUT_FILE_PATH] [-m|-r| ]"
-        << std::endl;
+    std::cout << "Usage: WinEventsXml.exe [COMPUTER] [QUERY_FILE_PATH] [OUTPUT_FILE_PATH] [-m|-r| ] ";
+    std::cout << "[/log <path>] [/bu <path>]\n\n";
     std::cout << "-m - merge output mode" << std::endl;
     std::cout << "-r or empty - rewrite output mode" << std::endl;
+    std::cout << "/log <path> - writing log in file" << std::endl;
+    std::cout << "/bu <path> - create backup of output xml file" << std::endl;
     std::cout << "------------------------------------------------------------------------" 
         << std::endl;
     std::cout << "Use ONLY UTF encoding in query file!" << std::endl;
@@ -102,23 +146,36 @@ Main::MainInfo Main::HandleArgs(int argc, char** argv)
 {
     Main::MainInfo mainInfo;
 
-    if (argc >= 3) {
+    if (argc >= 4) {
         if (argv[1] != nullptr) {
-            StringToWString(mainInfo.remoteComputer, std::string(argv[1]));
+            mainInfo.remoteComputer = StringToWString(std::string(argv[1]));
         }
         if (argv[2] != nullptr) {
-            StringToWString(mainInfo.queryFile, std::string(argv[2]));
+            mainInfo.queryFile = StringToWString(std::string(argv[2]));
         }
         if (argv[3] != nullptr) {
-            StringToWString(mainInfo.outputFile, std::string(argv[3]));
+            mainInfo.outputFile = StringToWString(std::string(argv[3]));
         }
 
-        if (argv[4] != nullptr) {
-            if (!strcmp(argv[4], "-m")) {
-                mainInfo.outputMode = MergeOutput;
-            }
-            else {
-                mainInfo.outputMode = RewriteOutput;
+        for (int i = 4; i < argc; ++i) {
+            if (argv[i] != nullptr) {
+                std::string arg(argv[i]);
+
+                if (arg == "/log") {
+                    mainInfo.makeLog = true;
+                    mainInfo.logPath = 
+                        (argv[i + 1] == nullptr) ? L"" : 
+                        StringToWString(argv[i + 1]);
+                }
+                if (arg == "-m") {
+                    mainInfo.outputMode = MergeOutput;
+                }
+                if (arg == "/bu") {
+                    mainInfo.makeBackup = true;
+                    mainInfo.backupPath = 
+                        (argv[i + 1] == nullptr) ? L"" : 
+                        StringToWString(argv[i + 1]);
+                }
             }
         }
     }
@@ -133,11 +190,18 @@ Main::MainInfo Main::HandleArgs(int argc, char** argv)
 // utils:
 
 // only for 1 byte chars
-int Main::StringToWString(std::wstring& ws, const std::string& s)
+std::wstring Main::StringToWString(const std::string& s)
 {
     std::wstring wsTmp(s.begin(), s.end());
 
-    ws = wsTmp;
+    return wsTmp;
+}
 
-    return 0;
+std::wstring Main::GetCurrentComputerName()
+{
+    DWORD MaxComputerNameLength = 256;
+    wchar_t* computerName = new wchar_t[MaxComputerNameLength];
+    GetComputerNameW(computerName, &MaxComputerNameLength);
+
+    return { computerName };
 }

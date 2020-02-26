@@ -214,9 +214,6 @@ namespace wew {
             wideStringStream << wideInputFileStream.rdbuf();
             wideInputFileStream.close();
         }
-        else {
-            std::wcerr << L"Cannot to open file " << path << std::endl;
-        }
 
         return wideStringStream.str();
     }

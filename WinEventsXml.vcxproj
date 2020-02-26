@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="main.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="teebuf.hpp" />
     <ClInclude Include="winevt\pugixml\pugiconfig.hpp" />
     <ClInclude Include="winevt\pugixml\pugixml.hpp" />
     <ClInclude Include="winevt\winevt.h" />

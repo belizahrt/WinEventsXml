@@ -84,4 +84,17 @@ namespace wew {
         return destination.load_buffer(buffer.c_str(), size);
     }
 
+    bool MergePredicate::operator()(pugi::xml_node node) const
+    {
+        pugi::xml_node systemNode = node.child("System");
+        std::string computer =
+            systemNode.child("Computer").text().as_string();
+        unsigned int recordId =
+            systemNode.child("EventRecordID").text().as_uint();
+
+        bool result = (m_Computer == computer && m_recordId == recordId);
+
+        return result;
+    }
+
 }

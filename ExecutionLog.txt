@@ -1,0 +1,13 @@
+
+Executing log for localhost on AMUR-KUA
+Thu Feb  6 16:18:43 2020
+-------------------------------------------
+Executing query...
+Executing query has been finished.
+Merging events in file.
+0 events inserted.
+Saving in EventLog.xml
+...succeed
+Finished. (LEC=0x0)
+-------------------------------------------
+Duration: 1259 msec

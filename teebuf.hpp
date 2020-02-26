@@ -16,14 +16,18 @@ protected:
     virtual int_type overflow(int_type c) override
     {
         constexpr int_type eof = T::eof();
-        if (T::eq_int_type(c, eof)) return T::not_eof(c);
-        else
-        {
+        if (T::eq_int_type(c, eof)) {
+            return T::not_eof(c);
+        }
+        else {
             const C ch = T::to_char_type(c);
             if (T::eq_int_type(first->sputc(ch), eof) ||
-                T::eq_int_type(second->sputc(ch), eof))
+                T::eq_int_type(second->sputc(ch), eof)) {
                 return eof;
-            else return c;
+            }
+            else {
+                return c;
+            }
         }
     }
 
