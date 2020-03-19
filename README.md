@@ -23,7 +23,7 @@ WinEventsXml.exe [computer] [query_file] [output_xml_file] -m /log [log_file] /b
 | Command | Description |
 | ------ | ------ |
 | [computer] | Target machine name/ip. |
-| [query_file] | Query file contains [x-path query](https://docs.microsoft.com/en-us/windows/win32/wes/queryschema-schema) for events selection.
+| [query_file] | Query file contains [x-path query](https://docs.microsoft.com/en-us/windows/win32/wes/queryschema-schema) for events filtering.
 | [output_xml_file] | Output file contains result of working in xml file. Result - is set of [events nodes](https://docs.microsoft.com/en-us/windows/win32/wes/eventschema-schema) in <Events/> root node. |
 
 #### Optional parameters:
@@ -33,5 +33,19 @@ WinEventsXml.exe [computer] [query_file] [output_xml_file] -m /log [log_file] /b
 | /log [log_file] | Write execution log in file. |
 | /bu [backup_file] | Backup output file (if exists) before execute. |
 
-### Example
-
+### Example usage
+```sh
+WinEventsXml.exe localhost query.xml events.xml
+```
+#### query.xml:
+Taking all critical and error events per 24 hours in System channel
+```xml
+<QueryList>
+  <Query Id = "0" Path = "System">
+    <Select Path = "System">
+      *[System[(Level = 1 or Level = 2) and TimeCreated[timediff(@SystemTime) &lt;= 86400000]]]
+    </Select>
+  </Query>
+</QueryList>
+```
+#### events.xml file will contains all filtered events in xml format.
