@@ -1,6 +1,8 @@
 #ifndef WINEVTWRAPPER_H
 #define WINEVTWRAPPER_H
 
+#include "winevt.h"
+
 #include <iostream>
 #include <fstream>
 #include <codecvt>
@@ -8,7 +10,6 @@
 #include <vector>
 #include <Windows.h>
 #include <sddl.h>
-#include "winevt.h"
 
 namespace wew {
 
